@@ -1,189 +1,280 @@
-# Lux Improvement Proposals (LIPs)
-
 <div align="center">
-  <img width="80%" src="https://lux.network/logo.png" alt="Lux Network">
+  <img src="resources/LuxLogoRed.png?raw=true">
 </div>
 
-## TL;DR
-
-- **LIP = Lux Improvement Proposal** – the canonical process and document format for any change or guideline in the Lux Network ecosystem.
-- **LRC = Lux Request for Comment** – a subcategory of Standards-Track LIPs dedicated to application-layer and smart-contract standards (e.g., token contracts, signature formats).
-- **Every LRC is a LIP**, but only Standards-Track LIPs whose front-matter reads `category: LRC` get an LRC number.
-
 ---
 
-## 1. What is a Lux Improvement Proposal (LIP)?
+Node implementation for the [Lux](https://lux.network) network -
+a blockchains platform with high throughput, and blazing fast transactions.
 
-Lux Network follows the same pattern pioneered by Ethereum and later adopted by other L1s: an Improvement Proposal is "a design document providing information to the community or describing a new feature, process, or environment change." The public template shows that every LIP front-matter specifies:
+## Installation
 
-```yaml
-type:     (Standards Track | Meta | Informational)
-category: (Core | Networking | Interface | LRC)   # only for Standards Track
-status:   (Draft → Review → Last Call → Final)
+Lux is an incredibly lightweight protocol, so the minimum computer requirements are quite modest.
+Note that as network usage increases, hardware requirements may change.
+
+The minimum recommended hardware specification for nodes connected to Mainnet is:
+
+- CPU: Equivalent of 8 AWS vCPU
+- RAM: 16 GiB
+- Storage: 1 TiB
+  - Nodes running for very long periods of time or nodes with custom configurations may observe higher storage requirements.
+- OS: Ubuntu 22.04/24.04 or macOS >= 12
+- Network: Reliable IPv4 or IPv6 network connection, with an open public port.
+
+If you plan to build Lux from source, you will also need the following software:
+
+- [Go](https://golang.org/doc/install) version >= 1.23.9
+- [gcc](https://gcc.gnu.org/)
+- g++
+
+### Building From Source
+
+#### Clone The Repository
+
+Clone the Lux repository:
+
+```sh
+git clone git@github.com:luxfi/node.git
+cd luxd
 ```
 
-The template mirrors the EIP header and life-cycle—Draft, Review, Last Call, Final, etc.—so contributors know exactly how to move a proposal forward.
+This will clone and checkout the `master` branch.
 
-### LIP types at a glance
+#### Building Lux
 
-| Type | Purpose | Examples |
-|------|---------|----------|
-| **Standards Track** | Technical specs that affect interoperability | VM op-codes, JSON-RPC additions |
-| **Meta** | Changes to governance, tooling, or the LIP process itself | Editor rules, version-bump policies |
-| **Informational** | Non-binding research or best-practice docs | Economic analyses, threat models |
+Build Lux by running the build task:
 
-Within Standards Track LIPs there are four categories—**Core**, **Networking**, **Interface**, and **LRC**—exactly mirroring the EIP taxonomy where ERC plays the role reserved for LRC.
-
----
-
-## 2. What is a Lux Request for Comment (LRC)?
-
-**LRCs are simply the LRC category of Standards-Track LIPs.**
-
-They exist to standardise application-level conventions so that wallets, dApps, indexers, and block explorers can interoperate without bespoke glue code. Typical scopes include:
-
-- **Token interfaces** (fungible, non-fungible, or soul-bound variants)
-- **Wallet/account abstraction** (e.g., delegated execution, social recovery)
-- **Off-chain message formats** (permit signatures, typed-data hashing)
-- **URI schemes or registry contracts** (name services, metadata pointers)
-
-When such a proposal is merged, the document is stored in the same Git repository as other LIPs but is referred to by its LRC-X shorthand (just as Ethereum uses ERC-20 for EIP-20).
-
-### Header example
-
-```yaml
-lip: 27
-title: LRC-27 Fungible Token Standard
-type: Standards Track
-category: LRC
-status: Draft
-created: 2025-07-19
+```sh
+./scripts/run_task.sh build
 ```
 
----
+The `luxd` binary is now in the `build` directory. To run:
 
-## 3. How LIPs and LRCs relate
+```sh
+./build/luxd
+```
 
-|  | **LIP (umbrella)** | **LRC (subcategory)** |
-|---|---|---|
-| **Layer affected** | Any (consensus to UX) | Application / smart-contract |
-| **Who must upgrade?** | Core clients, node operators, or tooling | Contract authors & dApp integrators |
-| **Need a hard-fork?** | Only for Core LIPs | Never – contracts opt-in |
-| **Finality bar** | Multiple client implementations + consensus | ≥ 2 independent contract impls; no fork |
-| **Citation form** | LIP-42 | LRC-42 |
+### Binary Repository
 
----
+Install Lux using an `apt` repository.
 
-## 4. Process differences in practice
+#### Adding the APT Repository
 
-Both artifacts share the same states (Draft → Review → Last Call → Final/Withdrawn). The fork-coordination burden falls exclusively on Core LIPs; in contrast, an LRC can reach Final once two or more contract implementations demonstrate interoperability and the editor confirms no outstanding technical objections. That keeps the consensus-layer agile while letting dApp developers iterate quickly on higher-level standards.
+If you already have the APT repository added, you do not need to add it again.
 
----
+To add the repository on Ubuntu, run:
 
-## 5. Naming confusion & best practice
+```sh
+sudo su -
+wget -qO - https://downloads.lux.network/luxd.gpg.key | tee /etc/apt/trusted.gpg.d/luxd.asc
+source /etc/os-release && echo "deb https://downloads.lux.network/apt $UBUNTU_CODENAME main" > /etc/apt/sources.list.d/lux.list
+exit
+```
 
-Because Ethereum popularised the term "ERC-20," many people casually say "ERC" when they really mean "EIP." In Lux Network's case:
+#### Installing the Latest Version
 
-- Use **"LIP"** when you are talking about the proposal process.
-- Use **"LRC"** only for application-layer standards.
-- When citing, prefer the canonical form (**LIP-X**) in specifications, and the shorthand (**LRC-X**) in marketing or developer-facing docs.
+After adding the APT repository, install `luxd` by running:
 
-### Key takeaway
+```sh
+sudo apt update
+sudo apt install luxd
+```
 
-Think of "LIP" as the governing process and repository, and "LRC" as the slice of that process devoted to contract-level standards. If your idea affects the smart-contract or dApp layer—tokens, NFTs, account abstraction—it belongs in an LRC; everything else is "just" another type of LIP.
+### Binary Install
 
----
+Download the [latest build](https://github.com/luxfi/node/releases/latest) for your operating system and architecture.
 
-## LIP Workflow
+The Lux binary to be executed is named `luxd`.
 
-### Step 0: Have an idea
-The LIP process begins with a new idea for Lux. Each potential LIP must have an author: someone who writes the LIP using the style and format described below, shepherds the discussions in the appropriate forums, and attempts to build community consensus around the idea.
+### Docker Install
 
-### Step 1: Post to the forum
-Before you begin writing a formal LIP, you should vet your idea. Ask the Lux community first if an idea is original to avoid wasting time on something that will be rejected based on prior research.
+Make sure Docker is installed on the machine - so commands like `docker run` etc. are available.
 
-### Step 2: Propose a LIP via Pull Request
-Once you've decided your idea has a good chance of acceptance, draft a LIP following the [template](./LIPs/TEMPLATE.md). Submit it as a pull request to this repository. The PR number becomes the LIP number.
+Building the Docker image of latest `luxd` branch can be done by running:
 
-### Step 3: Get Your LIP Reviewed
-LIP editors will review your PR for structure, formatting, and other errors. Once approved by an editor, your LIP moves to Review status.
+```sh
+./scripts/run-task.sh build-image
+```
 
-### Step 4: Build Community Consensus
-Share your LIP with the community. Gather feedback, make improvements, and work towards consensus. For Core LIPs, you should reach out to client implementers. For LRCs, engage with dApp developers and wallet providers.
+To check the built image, run:
 
-### Step 5: Move to Last Call
-Once you've addressed feedback and believe your LIP is mature, you can request Last Call status. This starts a 14-day final review period.
+```sh
+docker image ls
+```
 
-### Step 6: Finalization
-If no substantive changes arise during Last Call, your LIP moves to Final. For Core LIPs, this coincides with client implementations being ready. For LRCs, this requires at least two independent, interoperable implementations.
+The image should be tagged as `avaplatform/luxd:xxxxxxxx`, where `xxxxxxxx` is the shortened commit of the Lux source it was built from. To run the Lux node, run:
 
-## What belongs in a successful LIP?
+```sh
+docker run -ti -p 9650:9650 -p 9651:9651 avaplatform/luxd:xxxxxxxx /luxd/build/luxd
+```
 
-Each LIP should have the following parts:
+## Running Lux
 
-- **Preamble**: YAML headers containing metadata about the LIP
-- **Abstract**: A short (~200 word) description of the technical issue being addressed
-- **Motivation**: The motivation should clearly explain why the existing protocol specification is inadequate
-- **Specification**: The technical specification should describe the syntax and semantics of any new feature
-- **Rationale**: The rationale fleshes out the specification by describing what motivated the design
-- **Backwards Compatibility**: All LIPs that introduce backwards incompatibilities must include a section describing these
-- **Test Cases**: Test cases for an implementation are mandatory for LIPs that are affecting consensus changes
-- **Reference Implementation**: An optional section that contains a reference/example implementation
-- **Security Considerations**: All LIPs must contain a section that discusses the security implications/considerations
+### Connecting to Mainnet
 
-## LIP Formats and Templates
+To connect to the Lux Mainnet, run:
 
-LIPs should be written in [markdown](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet) format. Each LIP should be in its own file named `lip-N.md` where `N` is the LIP number. 
+```sh
+./build/luxd
+```
 
-For LRCs, the file should still be named `lip-N.md` but the title should include the LRC designation (e.g., "LRC-20 Fungible Token Standard").
+You should see some pretty ASCII art and log messages.
 
-Image files should be included in a subdirectory of the `assets` folder: `assets/lip-N`.
+You can use `Ctrl+C` to kill the node.
 
-Please see the [LIP template](./LIPs/TEMPLATE.md) for the correct format.
+### Connecting to Fuji
 
-## Current Proposals
+To connect to the Fuji Testnet, run:
 
-| Number | Title | Author(s) | Type | Category | Status |
-|:-------|:------|:----------|:-----|:---------|:-------|
-| [LIP-1](./LIPs/lip-1.md) | Community Contribution Framework | Lux Team | Meta | - | Review |
-| [LIP-20](./LIPs/lip-20.md) | LRC-20 Fungible Token Standard | Lux Team | Standards Track | LRC | Draft |
+```sh
+./build/luxd --network-id=fuji
+```
 
-### Notable LRCs (Application Standards)
+### Creating a Local Testnet
 
-| LRC Number | LIP | Title | Status |
-|:-----------|:----|:------|:-------|
-| LRC-20 | [LIP-20](./LIPs/lip-20.md) | Fungible Token Standard | Draft |
+The [lux-cli](https://github.com/luxfi/lux-cli) is the easiest way to start a local network.
 
-## Contributing
+```sh
+lux network start
+lux network status
+```
 
-Before contributing to LIPs, please read the [LIP Terms of Contribution](./CONTRIBUTING.md) and review the [LIP template](./LIPs/TEMPLATE.md).
+### Single-Node Development Mode
 
-## LIP Editors
+For quick local development, you can run a single-node Lux network with sybil protection disabled:
 
-The current LIP editors are:
-- *To be determined*
+```sh
+# Using the convenience script
+./scripts/run_dev.sh
 
-## LIP Editor Responsibilities
+# Or manually with all options
+./build/luxd \
+    --network-id=local \
+    --sybil-protection-enabled=false \
+    --http-host=0.0.0.0 \
+    --http-port=9630 \
+    --staking-port=9631 \
+    --api-admin-enabled=true \
+    --api-keystore-enabled=true \
+    --api-metrics-enabled=true
+```
 
-For each new LIP that comes in, an editor does the following:
-- Read the LIP to check if it is ready: sound and complete
-- Check if the LIP fits the format and template
-- Check if the LIP has been properly discussed in forums
-- Assign a LIP number and merge the PR
-- For LRCs, also assign an LRC number (e.g., if LIP-27 is an LRC, it becomes LRC-27)
+The single-node dev mode provides:
+- **HTTP RPC endpoint**: `http://localhost:9630`
+- **WebSocket endpoint**: `ws://localhost:9630/ext/bc/C/ws`
+- **C-Chain RPC**: `http://localhost:9630/ext/bc/C/rpc`
 
-## Contact
+You can interact with the C-Chain using standard Ethereum tools:
+```sh
+# Example using curl
+curl -X POST --data '{"jsonrpc":"2.0","method":"eth_chainId","params":[],"id":1}' \
+     -H "Content-Type: application/json" \
+     http://localhost:9630/ext/bc/C/rpc
+```
 
-- **Discord**: [Join our Discord](https://discord.gg/lux)
-- **Forum**: [Lux Community Forum](https://forum.lux.network)
-- **GitHub Discussions**: [LIP Discussions](https://github.com/luxfi/lips/discussions)
+**Note**: Single-node mode with sybil protection disabled should only be used for development. Never use this configuration on public networks (Mainnet or Fuji).
 
-## License
+## Bootstrapping
 
-This repository is licensed under [CC0 1.0 Universal](LICENSE).
+A node needs to catch up to the latest network state before it can participate in consensus and serve API calls. This process (called bootstrapping) currently takes several days for a new node connected to Mainnet.
 
-## History
+A node will not [report healthy](https://build.lux.network/docs/api-reference/health-api) until it is done bootstrapping.
 
-This document was derived heavily from [Ethereum's EIP process](https://eips.ethereum.org/EIPS/eip-1), which was derived from [Bitcoin's BIP process](https://github.com/bitcoin/bips), which was derived from [Python's PEP process](https://www.python.org/dev/peps/).
+Improvements that reduce the amount of time it takes to bootstrap are under development.
 
-(This explanation is modelled on the publicly documented EIP/ERC framework, but Lux's exact categorisation may evolve. Always check the current CONTRIBUTING.md in the LIP repo before submitting.)
+The bottleneck during bootstrapping is typically database IO. Using a more powerful CPU or increasing the database IOPS on the computer running a node will decrease the amount of time bootstrapping takes.
+
+## Generating Code
+
+Lux uses multiple tools to generate efficient and boilerplate code.
+
+### Running protobuf codegen
+
+To regenerate the protobuf go code, run `scripts/run-task.sh generate-protobuf` from the root of the repo.
+
+This should only be necessary when upgrading protobuf versions or modifying .proto definition files.
+
+To use this script, you must have [buf](https://docs.buf.build/installation) (v1.31.0), protoc-gen-go (v1.33.0) and protoc-gen-go-grpc (v1.3.0) installed.
+
+To install the buf dependencies:
+
+```sh
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.33.0
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0
+```
+
+If you have not already, you may need to add `$GOPATH/bin` to your `$PATH`:
+
+```sh
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+If you extract buf to ~/software/buf/bin, the following should work:
+
+```sh
+export PATH=$PATH:~/software/buf/bin/:~/go/bin
+go get google.golang.org/protobuf/cmd/protoc-gen-go
+go get google.golang.org/protobuf/cmd/protoc-gen-go-grpc
+scripts/run_task.sh generate-protobuf
+```
+
+For more information, refer to the [GRPC Golang Quick Start Guide](https://grpc.io/docs/languages/go/quickstart/).
+
+### Running mock codegen
+
+See [the Contributing document autogenerated mocks section](CONTRIBUTING.md####Autogenerated-mocks).
+
+## Versioning
+
+### Version Semantics
+
+Lux is first and foremost a client for the Lux network. The versioning of Lux follows that of the Lux network.
+
+- `v0.x.x` indicates a development network version.
+- `v1.x.x` indicates a production network version.
+- `vx.[Upgrade].x` indicates the number of network upgrades that have occurred.
+- `vx.x.[Patch]` indicates the number of client upgrades that have occurred since the last network upgrade.
+
+### Library Compatibility Guarantees
+
+Because Lux's version denotes the network version, it is expected that interfaces exported by Lux's packages may change in `Patch` version updates.
+
+### API Compatibility Guarantees
+
+APIs exposed when running Lux will maintain backwards compatibility, unless the functionality is explicitly deprecated and announced when removed.
+
+## Supported Platforms
+
+Lux can run on different platforms, with different support tiers:
+
+- **Tier 1**: Fully supported by the maintainers, guaranteed to pass all tests including e2e and stress tests.
+- **Tier 2**: Passes all unit and integration tests but not necessarily e2e tests.
+- **Tier 3**: Builds but lightly tested (or not), considered _experimental_.
+- **Not supported**: May not build and not tested, considered _unsafe_. To be supported in the future.
+
+The following table lists currently supported platforms and their corresponding
+Lux support tiers:
+
+| Architecture | Operating system | Support tier  |
+| :----------: | :--------------: | :-----------: |
+|    amd64     |      Linux       |       1       |
+|    arm64     |      Linux       |       2       |
+|    amd64     |      Darwin      |       2       |
+|    amd64     |     Windows      | Not supported |
+|     arm      |      Linux       | Not supported |
+|     i386     |      Linux       | Not supported |
+|    arm64     |      Darwin      | Not supported |
+
+To officially support a new platform, one must satisfy the following requirements:
+
+| Lux continuous integration | Tier 1  | Tier 2  | Tier 3  |
+| ---------------------------------- | :-----: | :-----: | :-----: |
+| Build passes                       | &check; | &check; | &check; |
+| Unit and integration tests pass    | &check; | &check; |         |
+| End-to-end and stress tests pass   | &check; |         |         |
+
+## Security Bugs
+
+**We and our community welcome responsible disclosures.**
+
+Please refer to our [Security Policy](SECURITY.md) and [Security Advisories](https://github.com/luxfi/node/security/advisories).

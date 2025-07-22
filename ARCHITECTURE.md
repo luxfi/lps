@@ -1,290 +1,105 @@
-# LIP Architecture and Process Flow
+# Lux Network Architecture
 
-This document provides visual representations and detailed explanations of the LIP/LRC architecture and process flows.
+## Overview
 
-## System Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Lux Network Governance                     │
-├─────────────────────────────────────────────────────────────┤
-│                                                               │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │    LIPs     │  │     DAO     │  │  Community  │         │
-│  │  (Process)  │◄─┤ (Decisions) │◄─┤   (Input)   │         │
-│  └──────┬──────┘  └─────────────┘  └─────────────┘         │
-│         │                                                     │
-│  ┌──────▼─────────────────────────────────────────┐         │
-│  │              Standards Categories               │         │
-│  ├─────────────┬─────────────┬────────────────────┤         │
-│  │    Core     │  Application │   Infrastructure  │         │
-│  │  Protocol   │  Standards   │    & Tooling      │         │
-│  │             │    (LRCs)    │                    │         │
-│  └─────────────┴─────────────┴────────────────────┘         │
-│                                                               │
-└─────────────────────────────────────────────────────────────┘
-```
-
-## LIP Lifecycle Flow
+The Lux Network consists of multiple specialized chains, each optimized for specific functionality:
 
 ```
-     ┌─────────┐
-     │  IDEA   │ ← Community Member Has Idea
-     └────┬────┘
-          │
-     ┌────▼────┐
-     │DISCUSSION│ ← GitHub Discussions / Discord
-     └────┬────┘
-          │
-     ┌────▼────┐
-     │  DRAFT  │ ← Formal LIP Submitted
-     └────┬────┘
-          │
-     ┌────▼────┐
-     │ REVIEW  │ ← Technical & Community Review
-     └────┬────┘
-          │
-     ┌────▼────────┐
-     │ LAST CALL  │ ← 14-Day Final Review
-     └────┬────────┘
-          │
-     ┌────▼────┐
-     │  FINAL  │ ← Accepted & Implemented
-     └─────────┘
-
-Alternative Paths:
-     DRAFT ──► WITHDRAWN (Author Abandons)
-     REVIEW ──► REJECTED (Community Rejects)
-     ANY ──► STAGNANT (60+ Days Inactive)
+┌─────────────────────────────────────────────────────────────────┐
+│                        Lux Network Architecture                   │
+├─────────────────────┬─────────────────────┬────────────────────┤
+│    A-Chain          │    M-Chain          │    Z-Chain         │
+│  (Attestation)      │    (Money)          │  (Zero-Knowledge)  │
+├─────────────────────┼─────────────────────┼────────────────────┤
+│ • TEE Attestation   │ • CGG21 MPC         │ • zkEVM/zkVM       │
+│ • Hardware RoT      │ • Asset Custody     │ • FHE Operations   │
+│ • Validator ID      │ • Bridge Operations │ • ZK Proofs        │
+│ • Secure Enclaves   │ • Teleport Protocol │ • Private Contracts│
+└─────────────────────┴─────────────────────┴────────────────────┘
+                              │
+                              ▼
+        ┌─────────────────────────────────────────────┐
+        │              Primary Network                 │
+        ├──────────┬──────────────┬──────────────────┤
+        │ P-Chain  │   X-Chain    │    C-Chain       │
+        │(Platform)│  (Exchange)  │   (Contract)     │
+        └──────────┴──────────────┴──────────────────┘
 ```
 
-## LIP/LRC Hierarchy
+## Chain Responsibilities
 
-```
-                          LIP
-                 (Lux Improvement Proposal)
-                           │
-        ┌──────────────────┼──────────────────┐
-        │                  │                  │
-   Standards Track        Meta          Informational
-        │                  │                  │
-        │              Governance        Best Practices
-        │               Process           Guidelines
-        │              Management          Research
-        │
-        ├─── Core ──────── Protocol Changes
-        │                  Consensus Rules
-        │                  Block Structure
-        │
-        ├─── Networking ── P2P Protocols
-        │                  Message Format
-        │                  Node Discovery
-        │
-        ├─── Interface ─── APIs/RPCs
-        │                  Client Standards
-        │                  External Interfaces
-        │
-        └─── LRC ───────── Application Standards
-                          Token Standards
-                          DeFi Protocols
-                          Smart Contracts
-```
+### A-Chain (Attestation Chain)
+The A-Chain provides hardware-based trust and attestation services:
 
-## Multi-Chain Architecture
+- **TEE Attestation**: Verifies Trusted Execution Environment attestations
+- **Hardware Root of Trust**: Manages hardware security modules
+- **Validator Identity**: Cryptographic attestation of validator identities
+- **Secure Enclave Management**: Coordinates secure computation environments
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                   Lux Network Chains                     │
-├─────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐             │
-│  │ P-Chain  │  │ C-Chain  │  │ X-Chain  │   Primary   │
-│  │(Platform)│  │(Contract)│  │(Exchange)│   Chains    │
-│  └────┬─────┘  └────┬─────┘  └────┬─────┘             │
-│       │              │              │                    │
-│  ┌────▼──────────────▼──────────────▼────┐             │
-│  │         Cross-Chain Messaging          │             │
-│  │      (Teleporter/AWM - LIP-15)       │             │
-│  └────┬──────────────┬──────────────┬────┘             │
-│       │              │              │                    │
-│  ┌────▼─────┐  ┌────▼─────┐  ┌────▼─────┐             │
-│  │ B-Chain  │  │ Z-Chain  │  │ A-Chain  │  Specialized│
-│  │(Attestn) │  │(Privacy) │  │(Archive) │   Chains    │
-│  └──────────┘  └──────────┘  └──────────┘             │
-│                                                          │
-└─────────────────────────────────────────────────────────┘
-```
+### M-Chain (Money Chain)
+The M-Chain handles all cross-chain asset operations:
 
-## Standards Development Phases
+- **CGG21 MPC**: Implements Canetti-Gennaro-Goldfeder 2021 threshold signatures
+- **Asset Custody**: Distributed custody using top 100 validators
+- **Bridge Operations**: Manages cross-chain asset transfers
+- **Teleport Protocol**: Native cross-chain transfers without wrapped assets
+- **X-Chain Settlement**: All assets mint/burn on X-Chain for unified settlement
 
-```
-Phase 1: Foundation (Q1-Q2 2025)
-├── Governance Framework
-├── Core Protocol Standards
-└── Network Infrastructure
+### Z-Chain (Zero-Knowledge Chain)
+The Z-Chain provides privacy and cryptographic proof services:
 
-Phase 2: Execution (Q2-Q3 2025)
-├── Token Standards (LRC-20, 21, 22)
-├── DeFi Primitives
-└── Bridge Protocols
+- **zkEVM/zkVM**: Zero-knowledge virtual machines for private computation
+- **FHE Operations**: Fully Homomorphic Encryption for computation on encrypted data
+- **ZK Proof Generation**: Creates and verifies zero-knowledge proofs
+- **Private Smart Contracts**: Confidential contract execution
+- **Privacy Preserving Transactions**: Shielded transfers and operations
 
-Phase 3: Interoperability (Q3-Q4 2025)
-├── Cross-Chain Messaging
-├── Universal Bridges
-└── Wallet Standards
+## Integration Points
 
-Phase 4: Compliance (Q4 2025-Q1 2026)
-├── B-Chain Launch
-├── Identity Standards
-└── Regulated Assets
+### M-Chain ↔ Z-Chain
+- M-Chain requests ZK proofs from Z-Chain for cross-chain transfers
+- Z-Chain provides privacy proofs for confidential bridge operations
+- Shared validator set for security
 
-Phase 5: Privacy (Q1-Q2 2026)
-├── Z-Chain Launch
-├── ZK Integrations
-└── Private Assets
+### A-Chain ↔ M-Chain
+- A-Chain attests M-Chain validators for MPC participation
+- Hardware-backed key generation and signing
 
-Phase 6: Scalability (Q2-Q3 2026)
-├── A-Chain Launch
-├── Light Clients
-└── Data Availability
+### A-Chain ↔ Z-Chain
+- TEE-based ZK proof generation for enhanced security
+- Hardware-accelerated FHE operations
 
-Phase 7: Applications (Q3 2026+)
-├── Advanced Token Standards
-├── DeFi Innovations
-└── Emerging Use Cases
-```
+## Security Model
 
-## Stakeholder Interaction Model
+1. **Economic Security**: Staked validators secure all chains
+2. **Cryptographic Security**: 
+   - CGG21 MPC (M-Chain)
+   - ZK-SNARKs/STARKs (Z-Chain)
+   - TEE Attestation (A-Chain)
+3. **Hardware Security**: TEE and HSM integration
+4. **Threshold Security**: 2/3+ consensus required
 
-```
-┌──────────────────────────────────────────────────────┐
-│                  LIP Stakeholders                     │
-├──────────────────────────────────────────────────────┤
-│                                                       │
-│    Authors          Editors         Implementers     │
-│       │                │                 │           │
-│       └────┬───────────┴────────────┬───┘           │
-│            │                        │                │
-│       ┌────▼────┐            ┌─────▼─────┐         │
-│       │   LIP   │            │  GitHub   │         │
-│       │Document │◄───────────┤Repository │         │
-│       └────┬────┘            └─────┬─────┘         │
-│            │                        │                │
-│       ┌────▼────────────────────────▼────┐         │
-│       │        Community Review          │         │
-│       └────┬────────────────────────┬────┘         │
-│            │                        │                │
-│      Validators                 Token Holders       │
-│     (Technical)                (Governance)         │
-│                                                       │
-└──────────────────────────────────────────────────────┘
-```
+## Implementation Phases
 
-## Technical Implementation Flow
+### Phase 1: M-Chain (In Progress)
+- Migrate from GG18 to CGG21 MPC
+- Implement Teleport Protocol
+- X-Chain settlement integration
 
-```
-LIP Approved
-     │
-     ├── Core/Networking Changes
-     │   └── Node Implementation (Go)
-     │       └── Network Upgrade
-     │           └── Validator Update
-     │
-     ├── Interface Changes
-     │   └── Client Libraries
-     │       └── SDK Updates
-     │           └── Documentation
-     │
-     └── LRC Standards
-         └── Smart Contracts
-             └── Reference Implementation
-                 └── Ecosystem Adoption
-```
+### Phase 2: Z-Chain
+- zkEVM implementation
+- FHE integration (Zama.ai style)
+- Privacy-preserving bridges
 
-## Governance Decision Tree
+### Phase 3: A-Chain
+- TEE attestation framework
+- Hardware security module integration
+- Validator identity system
 
-```
-                  New Proposal
-                       │
-                  Community
-                  Discussion
-                       │
-              ┌────────┴────────┐
-              │                 │
-         Technical          Governance
-         Standard             Change
-              │                 │
-         ┌────┴────┐      ┌────┴────┐
-         │         │      │         │
-      Core    Application DAO    Process
-    Protocol     (LRC)   Rules   Update
-         │         │      │         │
-         │         │      │         │
-    Validator  Developer  Token   Editor
-     Review     Review   Holder  Review
-         │         │     Vote       │
-         └────┬────┘      │         │
-              │           └────┬────┘
-              │                │
-         Implementation    Adoption
-```
+## Benefits of This Architecture
 
-## Cross-Reference Architecture
-
-```
-   Ethereum                Lux                 Avalanche
-   Standards            Standards              Standards
-      │                    │                      │
-   EIP-20 ─────────────► LRC-20 ◄─────────────ARC-20
-   EIP-721 ────────────► LRC-721 ◄────────────ARC-721
-   EIP-1155 ───────────► LRC-1155
-   EIP-4626 ───────────► LRC-4626
-      │                    │                      │
-      └────── Compat ──────┼────── Compat ───────┘
-                           │
-                    Innovation
-                           │
-                  ┌────────┴────────┐
-                  │                 │
-              B-Chain           Z-Chain
-              Standards         Standards
-              (Unique)          (Unique)
-```
-
-## Development Workflow
-
-```
-Developer Journey:
-┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐
-│  Learn  │───▶│  Build  │───▶│  Test   │───▶│ Deploy  │
-└─────────┘    └─────────┘    └─────────┘    └─────────┘
-     │              │              │              │
-  Read Docs    Use Template   Run Scripts   Mainnet/Testnet
-  Study LIPs   Implement Std  Validate     Verify Contract
-  Join Discord Write Tests    Security     Monitor Usage
-```
-
-## Economic Flow
-
-```
-                 LIP Implementation
-                        │
-    ┌───────────────────┼───────────────────┐
-    │                   │                   │
-Developer           Community           Ecosystem
-Incentives          Treasury            Growth
-    │                   │                   │
-  Grants            Funding              Value
-  Bounties          Rewards             Creation
-  Recognition       Staking             Adoption
-    │                   │                   │
-    └───────────────────┴───────────────────┘
-                        │
-                 Sustainable
-                 Development
-```
-
----
-
-*These diagrams represent the current architecture and may evolve as the LIP process matures.*  
-*Last Updated: January 2025*
+1. **Separation of Concerns**: Each chain optimized for its purpose
+2. **Scalability**: Parallel processing across specialized chains
+3. **Security**: Multiple layers of cryptographic and hardware security
+4. **Privacy**: Dedicated privacy chain with state-of-the-art techniques
+5. **Interoperability**: Seamless asset movement via Teleport Protocol

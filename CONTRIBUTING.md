@@ -1,144 +1,128 @@
-# Contributing to Lux Improvement Proposals (LIPs)
+# How to Contribute to Lux
 
-Thank you for your interest in contributing to the Lux Network through the LIP process! This document outlines the terms and guidelines for contributing.
+## Setup
 
-## Terms of Contribution
+To start developing on Lux, you'll need a few things installed.
 
-By contributing to this repository, you agree to the following terms:
+- Golang version >= 1.23.9
+- gcc
+- g++
 
-### 1. Intellectual Property Rights
+On MacOS, a modern version of bash is required (e.g. via [homebrew](https://brew.sh/) with `brew install bash`). The version installed by default is not compatible with Lux's [shell scripts](scripts).
 
-- All contributions are considered public domain.
-- You waive all copyright and related rights to your contributions via [CC0](https://creativecommons.org/publicdomain/zero/1.0/).
-- You represent that you have the right to waive such rights.
-- You understand that your contributions will be permanently public and may be redistributed.
+## Running tasks
 
-### 2. Code of Conduct
+This repo uses the [Task](https://taskfile.dev/) task runner to simplify usage and discoverability of development tasks. To list available tasks:
 
-Contributors must:
-- Be respectful and professional in all interactions
-- Focus on what is best for the Lux Network and community
-- Accept constructive criticism gracefully
-- Show empathy towards other community members
+```bash
+./scripts/run_task.sh
+```
 
-Contributors must not:
-- Use inappropriate language or imagery
-- Engage in personal attacks or harassment
-- Publish others' private information without permission
-- Engage in any conduct that could be considered inappropriate in a professional setting
+## Issues
 
-### 3. Contribution Guidelines
+### Security
 
-#### Before You Begin
+- Do not open up a GitHub issue if it relates to a security vulnerability in Lux, and instead refer to our [security policy](./SECURITY.md).
 
-1. **Search existing LIPs**: Ensure your idea hasn't already been proposed or implemented.
-2. **Start a discussion**: Post your idea in the GitHub Discussions "Ideas" category first.
-3. **Get feedback**: Gauge community interest before drafting a full LIP.
+### Did you fix whitespace, format code, or make a purely cosmetic patch?
 
-#### Writing Your LIP
+- Changes from the community that are cosmetic in nature and do not add anything substantial to the stability, functionality, or testability of `luxd` will generally not be accepted.
 
-1. **Use the template**: Start with the [LIP template](./LIPs/TEMPLATE.md).
-2. **Be clear and concise**: Technical specifications should be detailed but accessible.
-3. **Focus on one idea**: Each LIP should address a single, well-defined improvement.
-4. **Consider all aspects**: Address security, backwards compatibility, and economic impacts.
+### Making an Issue
 
-#### Special Considerations for LRCs (Application Standards)
+- Check that the issue you're filing doesn't already exist by searching under [issues](https://github.com/luxfi/node/issues).
+- If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/luxfi/node/issues/new/choose). Be sure to include a *title and clear description* with as much relevant information as possible.
 
-If you're proposing an application-layer standard (token interface, wallet standard, etc.):
+## Features
 
-1. **Set category to LRC**: In the template, use `category: LRC` for Standards Track proposals.
-2. **Include interoperability focus**: Show how multiple implementations can work together.
-3. **Provide reference implementations**: Include at least one complete implementation.
-4. **Test with real applications**: Demonstrate usage in actual dApps or wallets.
-5. **Use LRC numbering in title**: E.g., "LRC-20 Fungible Token Standard"
+- If you want to start a discussion about the development of a new feature or the modification of an existing one, start a thread under GitHub [discussions](https://github.com/luxfi/node/discussions/categories/ideas).
+- Post a thread about your idea and why it should be added to Lux.
+- Don't start working on a pull request until you've received positive feedback from the maintainers.
 
-#### Submission Process
+## Pull Request Guidelines
 
-1. **Fork the repository**: Create your own fork of the LIP repository.
-2. **Create a branch**: Name it `lip-draft-your-title`.
-3. **Add your LIP**: Create a new file `LIPs/lip-draft.md` with your proposal.
-4. **Submit a PR**: The PR number will become your LIP number once merged.
+- Open a new GitHub pull request containing your changes.
+- Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
+- The PR should be opened against the `master` branch.
+- If your PR isn't ready to be reviewed just yet, you can open it as a draft to collect early feedback on your changes.
+- Once the PR is ready for review, mark it as ready-for-review and request review from one of the maintainers.
 
-#### After Submission
+### Autogenerated code
 
-1. **Engage with feedback**: Respond to comments and suggestions on your PR.
-2. **Make revisions**: Update your LIP based on community feedback.
-3. **Shepherd discussion**: Once merged, actively participate in the GitHub Discussion.
+- Any changes to protobuf message types require that protobuf files are regenerated.
 
-### 4. Standards and Formatting
+```sh
+./scripts/run_task.sh generate-protobuf
+```
 
-#### Markdown Style
+#### Autogenerated mocks
 
-- Use [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-- Keep lines under 120 characters when possible.
-- Use proper heading hierarchy (don't skip levels).
-- Include a table of contents for long documents.
+💁 The general direction is to **reduce** usage of mocks, so use the following with moderation.
 
-#### Code Examples
+Mocks are auto-generated using [mockgen](https://pkg.go.dev/go.uber.org/mock/mockgen) and `//go:generate` commands in the code.
 
-- Use syntax highlighting with language specifiers.
-- Keep examples concise and relevant.
-- Include comments explaining complex logic.
-- Test all code examples before submission.
+- To **re-generate all mocks**, use the command below from the root of the project:
 
-#### References
+    ```sh
+    ./scripts/run_task.sh generate-mocks
+    ```
 
-- Link to relevant external resources.
-- Cite sources for technical claims.
-- Reference related LIPs where applicable.
+- To **add** an interface that needs a corresponding mock generated:
+  - if the file `mocks_generate_test.go` exists in the package where the interface is located, either:
+    - modify its `//go:generate go run go.uber.org/mock/mockgen` to generate a mock for your interface (preferred); or
+    - add another `//go:generate go run go.uber.org/mock/mockgen` to generate a mock for your interface according to specific mock generation settings
+  - if the file `mocks_generate_test.go` does not exist in the package where the interface is located, create it with content (adapt as needed):
 
-### 5. Review Process
+    ```go
+    // Copyright (C) 2019-2024, Lux Industries Inc. All rights reserved.
+    // See the file LICENSE for licensing terms.
 
-LIP maintainers will review submissions for:
+    package mypackage
 
-- **Completeness**: All required sections are present and thorough.
-- **Clarity**: The proposal is well-written and understandable.
-- **Technical Merit**: The proposal is technically sound.
-- **Alignment**: The proposal aligns with Lux Network goals and values.
+    //go:generate go run go.uber.org/mock/mockgen -package=${GOPACKAGE} -destination=mocks_test.go . YourInterface
+    ```
 
-### 6. Licensing
+    Notes:
+    1. Ideally generate all mocks to `mocks_test.go` for the package you need to use the mocks for and do not export mocks to other packages. This reduces package dependencies, reduces production code pollution and forces to have locally defined narrow interfaces.
+    1. Prefer using reflect mode to generate mocks than source mode, unless you need a mock for an unexported interface, which should be rare.
+- To **remove** an interface from having a corresponding mock generated:
+  1. Edit the `mocks_generate_test.go` file in the directory where the interface is defined
+  1. If the `//go:generate` mockgen command line:
+      - generates a mock file for multiple interfaces, remove your interface from the line
+      - generates a mock file only for the interface, remove the entire line. If the file is empty, remove `mocks_generate_test.go` as well.
 
-By submitting an LIP, you agree that:
+### Testing
 
-- Your contribution is original work or you have rights to submit it.
-- Your contribution is licensed under [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/).
-- You waive all copyright and related rights.
+#### Local
 
-### 7. Recognition
+- Build the luxd binary
 
-Contributors will be:
-- Listed as authors on their LIPs
-- Acknowledged in the LIP repository
-- Eligible for community recognition programs
-- Considered for the Lux Weights rewards system (see LIP-1)
+```sh
+./scripts/run_task.sh build
+```
 
-## Getting Help
+- Run unit tests
 
-If you need assistance:
+```sh
+./scripts/run_task.sh test-unit
+```
 
-- **Discord**: Join our [Discord server](https://discord.gg/lux) and ask in #lip-help
-- **Forum**: Post questions in the [Lux Community Forum](https://forum.lux.network)
-- **GitHub**: Open an issue for technical problems with the repository
+- Run the linter
 
-## Maintenance
+```sh
+./scipts/run_task.sh lint
+```
 
-### For LIP Authors
+### Continuous Integration (CI)
 
-- You are responsible for maintaining your LIP while it's in `Proposed` or `Implementable` status.
-- Review and approve/request changes to PRs that modify your LIP.
-- Keep the community updated on implementation progress.
+- Pull requests will generally not be approved or merged unless they pass CI.
 
-### For Maintainers
+## Other
 
-- Merge well-formatted, coherent proposals regardless of personal opinion on merit.
-- Ensure discussions remain respectful and productive.
-- Help authors improve their proposals through constructive feedback.
+### Do you have questions about the source code?
 
-## Questions?
+- Ask any question about Lux under GitHub [discussions](https://github.com/luxfi/node/discussions/categories/q-a).
 
-If you have questions about the contribution process, please:
-1. Check the [LIP README](./README.md)
-2. Search existing [GitHub Discussions](https://github.com/luxfi/lips/discussions)
-3. Ask in our [Discord](https://discord.gg/lux) #lip-help channel
+### Do you want to contribute to the Lux documentation?
 
-Thank you for contributing to the Lux Network!
+- Please check out the `lux-docs` repository [here](https://github.com/luxfi/lux-docs).
