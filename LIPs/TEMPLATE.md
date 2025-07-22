@@ -8,8 +8,8 @@ status: Draft
 type: <Standards Track, Meta, or Informational>
 category: <Core, Networking, Interface, LRC> (*only required for Standards Track LIPs)
 created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
-requires: <LIP number(s)> (*optional)
-replaces: <LIP number(s)> (*optional)
+requires: <LIP number(s)> (*optional; remove if none)
+replaces: <LIP number(s)> (*optional; remove if none)
 ---
 
 This is the suggested template for new LIPs.
@@ -47,6 +47,14 @@ An optional section that contains a reference/example implementation that people
 ## Security Considerations
 
 All LIPs must contain a section that discusses the security implications/considerations relevant to the proposed change. Include information that might be important for security discussions, surfaces risks and can be used throughout the life cycle of the proposal. E.g. include security-relevant design decisions, concerns, important discussions, implementation-specific guidance and pitfalls, an outline of threats and risks and how they are being addressed. LIP submissions missing the "Security Considerations" section will be rejected. An LIP cannot proceed to status "Final" without a Security Considerations discussion deemed sufficient by the reviewers.
+
+## Economic Impact (optional)
+
+Discuss the economic implications of the proposed change, such as effects on token supply, fee structures, incentives, and market dynamics.
+
+## Open Questions (optional)
+
+List any unresolved issues, trade-offs, or questions that require further discussion before the LIP can advance.
 
 ## Copyright
 
