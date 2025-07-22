@@ -1,15 +1,15 @@
-# LIP-002: Z-Chain (Zero-Knowledge Chain) Specification
+# LIP-005: Z-Chain (Zero-Knowledge Chain) Specification
 
-**LIP Number**: 002  
+**LIP Number**: 005  
 **Title**: Z-Chain - Privacy and Cryptographic Proof Layer  
 **Author**: Lux Network Team  
 **Status**: Draft  
-**Type**: Core  
-**Created**: 2025-01-01  
+**Type**: Standards Track  
+**Created**: 2025-01-22
 
 ## Abstract
 
-This LIP specifies the Z-Chain (Zero-Knowledge Chain), a specialized blockchain within the Lux Network that provides privacy-preserving transactions, zero-knowledge proof generation, fully homomorphic encryption (FHE), and trusted execution attestations. The Z-Chain enables private cross-chain transfers via zkBridge and supports AI/ML workload attestations.
+This LIP specifies the Z-Chain (Zero-Knowledge Chain), a specialized blockchain within the Lux Network that provides privacy-preserving transactions, zero-knowledge proof generation, fully homomorphic encryption (FHE), and trusted execution attestations. The Z-Chain enables private cross-chain transfers via zkBridge, supports AI/ML workload attestations, and maintains the omnichain cryptographic root (Yggdrasil).
 
 ## Motivation
 
@@ -31,12 +31,57 @@ Z-Chain Architecture
 ├── Proof Systems (Groth16, PLONK, STARKs)
 ├── Attestation Service (TEE/SGX)
 ├── zkBridge (Private Cross-chain)
+├── Yggdrasil Root (Omnichain State)
+├── ZK Sequencer (Native)
 └── Compliance Module (Selective Disclosure)
 ```
 
 ### 2. Core Components
 
-#### 2.1 zkEVM Implementation
+#### 2.1 ZK Sequencer
+
+Native zero-knowledge sequencer optimized for privacy operations:
+
+```rust
+pub struct ZKSequencer {
+    // Core components
+    mempool: PrivateMempool,
+    block_producer: BlockProducer,
+    proof_generator: ProofGenerator,
+    
+    // State management
+    state_tree: SparseMerkleTree,
+    nullifier_tree: MerkleTree<Nullifier>,
+    yggdrasil: OmnichainRoot,
+    
+    // Consensus
+    validators: ValidatorSet,
+    consensus: SnowmanConsensus,
+}
+
+impl ZKSequencer {
+    fn produce_block(&self, private_txs: Vec<PrivateTx>) -> ZKBlock {
+        // Sort by fee and priority
+        let sorted_txs = self.mempool.get_sorted_txs();
+        
+        // Generate block with proofs
+        let block = self.block_producer.create_block(sorted_txs);
+        let proof = self.proof_generator.prove_block(&block);
+        
+        // Update omnichain root
+        self.yggdrasil.update(block.state_root());
+        
+        ZKBlock {
+            header: block.header,
+            body: block.body,
+            proof,
+            yggdrasil_root: self.yggdrasil.root(),
+        }
+    }
+}
+```
+
+#### 2.2 zkEVM Implementation
 
 Privacy-preserving smart contract execution:
 
@@ -273,9 +318,48 @@ async fn private_cross_chain_transfer(
 }
 ```
 
-### 5. Validator Requirements
+### 5. Yggdrasil - Omnichain Cryptographic Root
 
-#### 5.1 Hardware Requirements
+The Yggdrasil system maintains a unified cryptographic root across all chains:
+
+```rust
+pub struct Yggdrasil {
+    // Chain roots
+    roots: HashMap<ChainId, StateRoot>,
+    
+    // Merkle tree of all chain states
+    omni_tree: MerkleTree<ChainState>,
+    
+    // Attestations from validators
+    attestations: Vec<Attestation>,
+}
+
+impl Yggdrasil {
+    pub fn update_chain_state(&mut self, chain: ChainId, root: StateRoot) {
+        self.roots.insert(chain, root);
+        self.recompute_omni_root();
+    }
+    
+    pub fn generate_inclusion_proof(
+        &self, 
+        chain: ChainId, 
+        element: Hash
+    ) -> InclusionProof {
+        // Generate proof that element exists in chain's state
+        // and chain's state is included in omnichain root
+    }
+}
+```
+
+**Benefits**:
+- Single source of truth for cross-chain state
+- Efficient cross-chain verification
+- Enables atomic cross-chain operations
+- Foundation for cross-chain composability
+
+### 6. Validator Requirements
+
+#### 6.1 Hardware Requirements
 - CPU: 32+ cores (AMD EPYC or Intel Xeon)
 - RAM: 128GB minimum
 - GPU: NVIDIA A100 or H100 (for proof generation)

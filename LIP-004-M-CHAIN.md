@@ -1,11 +1,11 @@
-# LIP-001: M-Chain (Money Chain) Specification
+# LIP-004: M-Chain (Money Chain) Specification
 
-**LIP Number**: 001  
+**LIP Number**: 004  
 **Title**: M-Chain - Threshold MPC Cross-Chain Asset Management  
 **Author**: Lux Network Team  
 **Status**: Draft  
-**Type**: Core  
-**Created**: 2025-01-01  
+**Type**: Standards Track  
+**Created**: 2025-01-22  
 
 ## Abstract
 
