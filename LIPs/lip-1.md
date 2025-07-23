@@ -1,11 +1,15 @@
-# LIP-002: Lux Network Tokenomics
-
-**LIP Number**: 002  
-**Title**: LUX Token Economics and Distribution  
-**Author**: Lux Network Team  
-**Status**: Draft  
-**Type**: Economic  
-**Created**: 2025-01-22  
+---
+lip: 1
+title: Native LUX Token Standard
+description: Defines the native LUX token economics, distribution, and utility across the Lux Network
+author: Lux Network Team (@luxdefi)
+discussions-to: https://forum.lux.network/lip-1
+status: Draft
+type: Standards Track
+category: Core
+created: 2025-01-22
+updated: 2025-01-23
+---  
 
 ## Abstract
 

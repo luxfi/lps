@@ -1,14 +1,14 @@
 ---
 lip: 38
-title: Lux Exchange (LX) Trading Protocol
-description: A fully decentralized on‑chain automated liquidity provision strategy for early tokens via native order‑book integration
-author: Lux Network Team
-discussions-to: <URL>
+title: LX Automated Market Making Protocol
+description: A fully decentralized on-chain automated liquidity provision strategy for early tokens via native order-book integration
+author: Lux Network Team (@luxdefi)
+discussions-to: https://forum.lux.network/lip-38
 status: Draft
 type: Standards Track
 category: LRC
-created: 2025-07-24
-requires: 20
+created: 2025-01-24
+requires: 3, 20
 ---
 
 ## Abstract

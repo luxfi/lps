@@ -1,11 +1,15 @@
-# LIP-001: Lux Network Core Consensus
-
-**LIP Number**: 001  
-**Title**: Lux Network Core Consensus and Chain Architecture  
-**Author**: Lux Network Team  
-**Status**: Draft  
-**Type**: Meta  
-**Created**: 2025-01-22  
+---
+lip: 4
+title: Core Consensus and Node Architecture  
+description: Defines the core consensus mechanism and node architecture for Lux Network
+author: Lux Network Team (@luxdefi)
+discussions-to: https://forum.lux.network/lip-4
+status: Draft
+type: Standards Track
+category: Core
+created: 2025-01-22
+updated: 2025-01-23
+---  
 
 ## Abstract
 

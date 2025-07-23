@@ -1,11 +1,16 @@
-# LIP-006: X-Chain Exchange Protocol Specification
-
-**LIP Number**: 006  
-**Title**: X-Chain High-Performance Exchange Protocol  
-**Author**: Lux Network Team  
-**Status**: Draft  
-**Type**: Standards Track  
-**Created**: 2025-01-22  
+---
+lip: 11
+title: X-Chain (Exchange Chain) Specification
+description: Defines the high-performance Exchange Chain for asset transfers and trading
+author: Lux Network Team (@luxdefi)
+discussions-to: https://forum.lux.network/lip-11
+status: Draft
+type: Standards Track
+category: Core
+created: 2025-01-22
+updated: 2025-01-23
+requires: 0, 3, 4
+---  
 
 ## Abstract
 

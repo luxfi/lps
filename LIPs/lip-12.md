@@ -1,11 +1,16 @@
-# LIP-003: C-Chain EVM Compatibility and Standards
-
-**LIP Number**: 003  
-**Title**: C-Chain Ethereum Virtual Machine Implementation  
-**Author**: Lux Network Team  
-**Status**: Draft  
-**Type**: Standards Track  
-**Created**: 2025-01-22  
+---
+lip: 12
+title: C-Chain (Contract Chain) EVM Specification
+description: Defines the EVM-compatible Contract Chain specification for Lux Network
+author: Lux Network Team (@luxdefi)
+discussions-to: https://forum.lux.network/lip-12
+status: Draft
+type: Standards Track
+category: Core
+created: 2025-01-22
+updated: 2025-01-23
+requires: 0, 4
+---  
 
 ## Abstract
 

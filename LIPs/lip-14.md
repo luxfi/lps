@@ -1,11 +1,16 @@
-# LIP-005: Z-Chain (Zero-Knowledge Chain) Specification
-
-**LIP Number**: 005  
-**Title**: Z-Chain - Privacy and Cryptographic Proof Layer  
-**Author**: Lux Network Team  
-**Status**: Draft  
-**Type**: Standards Track  
-**Created**: 2025-01-22
+---
+lip: 14
+title: Z-Chain (Zero-Knowledge Chain) Specification
+description: Defines the Zero-Knowledge chain for privacy and cryptographic proofs
+author: Lux Network Team (@luxdefi)
+discussions-to: https://forum.lux.network/lip-14
+status: Draft
+type: Standards Track
+category: Core
+created: 2025-01-22
+updated: 2025-01-23
+requires: 0, 4, 11, 13
+---
 
 ## Abstract
 

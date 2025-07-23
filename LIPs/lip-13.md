@@ -1,11 +1,16 @@
-# LIP-004: M-Chain (Money Chain) Specification
-
-**LIP Number**: 004  
-**Title**: M-Chain - Threshold MPC Cross-Chain Asset Management  
-**Author**: Lux Network Team  
-**Status**: Draft  
-**Type**: Standards Track  
-**Created**: 2025-01-22  
+---
+lip: 13
+title: M-Chain (MPC Bridge Chain) Specification
+description: Defines the Multi-party Computation chain for secure cross-chain operations
+author: Lux Network Team (@luxdefi)
+discussions-to: https://forum.lux.network/lip-13
+status: Draft
+type: Standards Track
+category: Core
+created: 2025-01-22
+updated: 2025-01-23
+requires: 0, 4, 11
+---  
 
 ## Abstract
 
