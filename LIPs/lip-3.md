@@ -287,53 +287,158 @@ function settleTrade(Trade memory trade) internal {
 }
 ```
 
-### API Specification
+### API Specification - FIX 4.4 Aligned
 
 #### REST API
 ```typescript
-// Place order
+// Place order - FIX field naming convention
 POST /api/v1/orders
 {
-    "market": "BTC-PERP",
-    "side": "buy",
-    "type": "limit",
-    "price": "65000",
-    "size": "0.5",
-    "leverage": "10",
-    "postOnly": true
+    "symbol": "BTCUSDC",          // FIX Tag 55 (Symbol)
+    "side": "BUY",                // FIX Tag 54 (Side: BUY=1, SELL=2)
+    "orderType": "LIMIT",         // FIX Tag 40 (OrdType)
+    "price": 63201587000,         // FIX Tag 44 (63,201.587 USDC in 1e-6)
+    "orderQty": 250000000,        // FIX Tag 38 (0.25 BTC in 1e-6)
+    "timeInForce": "POST_ONLY",   // FIX Tag 59/18 (ExecInst=P)
+    "clientOrderId": "ABC-123",   // FIX Tag 11 (ClOrdID)
+    "cashOrderQty": 15800396750,  // FIX Tag 152 (notional USD)
+    "leverage": 10,               // Custom field
+    "execInst": "P"               // FIX Tag 18 (P=PostOnly, R=ReduceOnly)
 }
 
-// Cancel order
+// Cancel order - FIX compliant
 DELETE /api/v1/orders/{orderId}
+{
+    "clientOrderId": "ABC-123",   // FIX Tag 11
+    "symbol": "BTCUSDC"           // FIX Tag 55
+}
+
+// Order status response - Execution Report (35=8)
+{
+    "orderId": "123456",          // FIX Tag 37
+    "clientOrderId": "ABC-123",   // FIX Tag 11
+    "symbol": "BTCUSDC",          // FIX Tag 55
+    "side": "BUY",                // FIX Tag 54
+    "orderQty": 250000000,        // FIX Tag 38
+    "price": 63201587000,         // FIX Tag 44
+    "execType": "NEW",            // FIX Tag 150 (0=New)
+    "ordStatus": "NEW",           // FIX Tag 39 (0=New)
+    "leavesQty": 250000000,       // FIX Tag 151
+    "cumQty": 0,                  // FIX Tag 14
+    "avgPx": 0,                   // FIX Tag 6
+    "transactTime": 1674234567890 // FIX Tag 60
+}
 
 // Get order book
-GET /api/v1/markets/{marketId}/orderbook?depth=20
+GET /api/v1/markets/{symbol}/orderbook?depth=20
 
-// Get positions
+// Get positions with signed quantity
 GET /api/v1/positions
+{
+    "positions": [{
+        "symbol": "BTCUSDC",      // FIX Tag 55
+        "posQty": 500000000,      // FIX Tag 704 (PosQty)
+        "longQty": 500000000,     // FIX Tag 705 
+        "shortQty": 0,            // FIX Tag 705
+        "posQtySigned": 500000000,// + for long, - for short
+        "avgPx": 62500000000,     // FIX Tag 6 (AvgPx)
+        "realizedPnl": 0,         // FIX Tag 8009
+        "unrealizedPnl": 350793500 // Custom field
+    }]
+}
 ```
 
-#### WebSocket Streams
+#### WebSocket Streams - FIX Aligned
 ```typescript
-// Order book updates
+// Order book updates - Market Data Request (35=V)
 ws.subscribe({
-    "channel": "orderbook",
-    "market": "BTC-PERP",
-    "depth": 10
+    "msgType": "V",               // FIX MsgType 35=V
+    "channel": "orderbook", 
+    "symbol": "BTCUSDC",          // FIX Tag 55
+    "marketDepth": 10,            // FIX Tag 264
+    "subscriptionRequestType": 1   // FIX Tag 263 (1=Subscribe)
 });
 
-// Trade feed
+// Market data snapshot/update (35=W)
+{
+    "msgType": "W",               // FIX MsgType 35=W
+    "symbol": "BTCUSDC",          // FIX Tag 55
+    "mdEntries": [{
+        "mdEntryType": "0",       // FIX Tag 269 (0=Bid)
+        "mdEntryPx": 63200000000, // FIX Tag 270 (Price)
+        "mdEntrySize": 500000000, // FIX Tag 271 (Size)
+        "mdEntryTime": 1674234567890 // FIX Tag 273
+    }]
+}
+
+// Trade feed - Trade Capture Report (35=AE)
 ws.subscribe({
+    "msgType": "AE",              // FIX MsgType 35=AE
     "channel": "trades",
-    "market": "BTC-PERP"
+    "symbol": "BTCUSDC"           // FIX Tag 55
 });
 
-// Position updates
+// Execution reports for own orders (35=8)
 ws.subscribe({
-    "channel": "positions",
+    "msgType": "8",               // FIX MsgType 35=8
+    "channel": "executions",
     "auth": true
 });
 ```
+
+### FIX Gateway Integration
+
+The LX Exchange provides native FIX 4.4 gateway for institutional traders:
+
+```typescript
+// FIX Session Configuration
+interface FIXConfig {
+    beginString: "FIX.4.4";       // FIX Tag 8
+    senderCompID: string;         // FIX Tag 49
+    targetCompID: "LUXEXCHANGE";  // FIX Tag 56
+    heartBtInt: 30;               // FIX Tag 108 (30 seconds)
+    encryptMethod: 0;             // FIX Tag 98 (None)
+}
+
+// FIX Message Examples
+
+// New Order Single (35=D)
+8=FIX.4.4|9=246|35=D|34=1080|49=CLIENT1|52=20240115-10:30:00.000|
+56=LUXEXCHANGE|11=ABC-123|21=1|55=BTCUSDC|54=1|60=20240115-10:30:00.000|
+38=250000000|40=2|44=63201587000|59=0|18=P|10=128|
+
+// Execution Report (35=8)
+8=FIX.4.4|9=378|35=8|34=2304|49=LUXEXCHANGE|52=20240115-10:30:00.123|
+56=CLIENT1|6=63201587000|11=ABC-123|14=0|17=EXEC123456|20=0|21=1|
+31=0|32=0|37=ORD789012|38=250000000|39=0|40=2|44=63201587000|54=1|
+55=BTCUSDC|59=0|60=20240115-10:30:00.123|150=0|151=250000000|10=215|
+
+// Order Cancel Request (35=F)
+8=FIX.4.4|9=156|35=F|34=1081|49=CLIENT1|52=20240115-10:31:00.000|
+56=LUXEXCHANGE|11=ABC-124|37=ORD789012|41=ABC-123|54=1|55=BTCUSDC|
+60=20240115-10:31:00.000|10=089|
+```
+
+### FIX to REST/WebSocket Mapping
+
+| FIX Field | FIX Tag | JSON Field | Type | Notes |
+|-----------|---------|------------|------|-------|
+| Price | 44 | price | uint256 | 1e-6 precision |
+| OrderQty | 38 | orderQty | uint256 | 1e-6 precision |
+| Symbol | 55 | symbol | string | BTCUSDC format |
+| Side | 54 | side | string | BUY/SELL in JSON |
+| OrdType | 40 | orderType | string | MARKET/LIMIT/STOP |
+| TimeInForce | 59 | timeInForce | string | GTC/IOC/FOK/GTD |
+| ExecInst | 18 | execInst | string | P=PostOnly, R=ReduceOnly |
+| ClOrdID | 11 | clientOrderId | string | Client's order ID |
+| OrderID | 37 | orderId | string | Exchange order ID |
+| ExecType | 150 | execType | string | Execution type |
+| OrdStatus | 39 | ordStatus | string | Order status |
+| LastPx | 31 | lastPx | uint256 | Fill price |
+| LastQty | 32 | lastQty | uint256 | Fill quantity |
+| LeavesQty | 151 | leavesQty | uint256 | Remaining quantity |
+| CumQty | 14 | cumQty | uint256 | Total filled |
+| AvgPx | 6 | avgPx | uint256 | VWAP |
 
 ### Performance Targets
 
@@ -344,6 +449,114 @@ ws.subscribe({
 | Book Depth | 1000 levels | Optimized data structures |
 | Settlement | Instant | X-Chain native |
 
+### FIX Protocol Implementation Details
+
+#### Message Flow
+```
+┌─────────┐    FIX 4.4    ┌─────────────┐    Native    ┌──────────┐
+│ TradFi  │────────────────│ FIX Gateway │──────────────│ Matching │
+│ Client  │                │  (Adaptor)  │              │  Engine  │
+└─────────┘                └─────────────┘              └──────────┘
+     │                            │                           │
+     │ 35=D (NewOrderSingle)      │                           │
+     │─────────────────────────>  │                           │
+     │                            │ Convert to Native          │
+     │                            │────────────────────────>   │
+     │                            │                           │
+     │                            │   Native Execution        │
+     │                            │<────────────────────────   │
+     │ 35=8 (ExecutionReport)     │                           │
+     │<─────────────────────────  │                           │
+```
+
+#### Order Type Mappings
+```solidity
+// FIX to Native conversion
+function convertFIXOrder(FIXOrder memory fixOrder) internal pure returns (Order memory) {
+    Order memory order;
+    
+    // Symbol mapping (Tag 55)
+    order.symbol = fixOrder.symbol;
+    
+    // Side mapping (Tag 54)
+    order.side = fixOrder.side == '1' ? Side.BUY : Side.SELL;
+    
+    // Order type mapping (Tag 40)
+    if (fixOrder.ordType == '1') order.orderType = OrderType.MARKET;
+    else if (fixOrder.ordType == '2') order.orderType = OrderType.LIMIT;
+    else if (fixOrder.ordType == '3') order.orderType = OrderType.STOP;
+    else if (fixOrder.ordType == '4') order.orderType = OrderType.STOP_LIMIT;
+    else if (fixOrder.ordType == 'P') order.orderType = OrderType.PEGGED;
+    
+    // Time in Force mapping (Tag 59 + Tag 18)
+    if (fixOrder.timeInForce == '0') order.timeInForce = TimeInForce.GTC;
+    else if (fixOrder.timeInForce == '3') order.timeInForce = TimeInForce.IOC;
+    else if (fixOrder.timeInForce == '4') order.timeInForce = TimeInForce.FOK;
+    else if (fixOrder.timeInForce == '6') order.timeInForce = TimeInForce.GTD;
+    
+    // Special handling for Post-Only via ExecInst
+    if (fixOrder.execInst == 'P') order.timeInForce = TimeInForce.POST_ONLY;
+    
+    // Price and quantity (micro-units)
+    order.price = fixOrder.price;         // Tag 44
+    order.orderQty = fixOrder.orderQty;   // Tag 38
+    order.clientOrderId = fixOrder.clOrdID; // Tag 11
+    
+    return order;
+}
+```
+
+#### Database Schema - FIX Aligned
+```sql
+CREATE TABLE orders (
+    order_id BIGINT PRIMARY KEY,           -- FIX Tag 37
+    client_order_id VARCHAR(64) NOT NULL,  -- FIX Tag 11
+    symbol VARCHAR(16) NOT NULL,           -- FIX Tag 55
+    side SMALLINT NOT NULL,                -- FIX Tag 54 (1=Buy, 2=Sell)
+    order_type SMALLINT NOT NULL,          -- FIX Tag 40
+    price BIGINT NOT NULL,                 -- FIX Tag 44 (micro-units)
+    order_qty BIGINT NOT NULL,             -- FIX Tag 38 (micro-units)
+    time_in_force SMALLINT NOT NULL,       -- FIX Tag 59
+    exec_inst VARCHAR(8),                  -- FIX Tag 18
+    order_status CHAR(1) NOT NULL,         -- FIX Tag 39
+    cum_qty BIGINT DEFAULT 0,              -- FIX Tag 14
+    leaves_qty BIGINT NOT NULL,            -- FIX Tag 151
+    avg_px BIGINT DEFAULT 0,               -- FIX Tag 6
+    transact_time BIGINT NOT NULL,         -- FIX Tag 60
+    
+    INDEX idx_symbol_side (symbol, side),
+    INDEX idx_client_order_id (client_order_id),
+    INDEX idx_transact_time (transact_time)
+);
+
+CREATE TABLE executions (
+    exec_id BIGINT PRIMARY KEY,            -- FIX Tag 17
+    order_id BIGINT NOT NULL,              -- FIX Tag 37
+    exec_type CHAR(1) NOT NULL,            -- FIX Tag 150
+    last_px BIGINT NOT NULL,               -- FIX Tag 31
+    last_qty BIGINT NOT NULL,              -- FIX Tag 32
+    exec_time BIGINT NOT NULL,             -- Timestamp
+    
+    FOREIGN KEY (order_id) REFERENCES orders(order_id)
+);
+```
+
+#### Logging Format - FIX Aligned
+```json
+{
+    "timestamp": 1674234567890,
+    "msgType": "D",                        // FIX Tag 35
+    "clientOrderId": "ABC-123",            // FIX Tag 11
+    "symbol": "BTCUSDC",                   // FIX Tag 55
+    "side": "BUY",                         // FIX Tag 54
+    "orderType": "LIMIT",                  // FIX Tag 40
+    "price": 63201587000,                  // FIX Tag 44
+    "orderQty": 250000000,                 // FIX Tag 38
+    "timeInForce": "POST_ONLY",            // FIX Tag 59/18
+    "event": "ORDER_RECEIVED"
+}
+```
+
 ## Rationale
 
 ### Design Decisions
@@ -353,6 +566,12 @@ ws.subscribe({
 3. **GPU Acceleration**: Leverages Hanzo for complex risk calculations
 4. **Portfolio Margining**: Maximizes capital efficiency for traders
 5. **Native Settlement**: No wrapped tokens or synthetic assets
+6. **FIX 4.4 Alignment**: 
+   - Familiar to institutional traders from TradFi
+   - Enables trivial FIX gateway implementation
+   - Standardized field names reduce integration time
+   - Compatible with existing trading infrastructure
+   - Consistent micro-unit pricing (1e-6) prevents float drift
 
 ### Trade-offs
 
@@ -436,6 +655,62 @@ Key components:
 - Real-time mark price calculation
 - Insurance fund for socialized losses
 - Emergency pause functionality
+
+## Appendix: FIX 4.4 Field Reference
+
+### Core Order Fields
+| Field Name | FIX Tag | JSON Field | Values | Description |
+|------------|---------|------------|--------|-------------|
+| BeginString | 8 | - | FIX.4.4 | Protocol version |
+| MsgType | 35 | msgType | D,F,G,8,9,AE,V,W | Message type |
+| Symbol | 55 | symbol | BTCUSDC, LUXUSDC | Trading pair |
+| Side | 54 | side | 1=Buy, 2=Sell | Order side |
+| OrderQty | 38 | orderQty | Micro-units (1e-6) | Order quantity |
+| Price | 44 | price | Micro-units (1e-6) | Limit price |
+| OrdType | 40 | orderType | 1=Market, 2=Limit, 3=Stop, 4=StopLimit | Order type |
+| TimeInForce | 59 | timeInForce | 0=GTC, 3=IOC, 4=FOK, 6=GTD | Time constraint |
+| ExecInst | 18 | execInst | P=PostOnly, R=ReduceOnly | Special instructions |
+| ClOrdID | 11 | clientOrderId | String | Client order ID |
+| OrderID | 37 | orderId | String | Exchange order ID |
+
+### Execution Fields
+| Field Name | FIX Tag | JSON Field | Values | Description |
+|------------|---------|------------|--------|-------------|
+| ExecID | 17 | execId | String | Execution ID |
+| ExecType | 150 | execType | 0=New, 1=Partial, 2=Fill, 4=Cancel | Execution type |
+| OrdStatus | 39 | ordStatus | 0=New, 1=PartiallyFilled, 2=Filled | Order status |
+| LastPx | 31 | lastPx | Micro-units | Fill price |
+| LastQty | 32 | lastQty | Micro-units | Fill quantity |
+| LeavesQty | 151 | leavesQty | Micro-units | Remaining quantity |
+| CumQty | 14 | cumQty | Micro-units | Total filled |
+| AvgPx | 6 | avgPx | Micro-units | Average fill price |
+
+### Market Data Fields
+| Field Name | FIX Tag | JSON Field | Values | Description |
+|------------|---------|------------|--------|-------------|
+| MDEntryType | 269 | mdEntryType | 0=Bid, 1=Offer, 2=Trade | Market data type |
+| MDEntryPx | 270 | mdEntryPx | Micro-units | Price level |
+| MDEntrySize | 271 | mdEntrySize | Micro-units | Size at level |
+| MDEntryTime | 273 | mdEntryTime | Timestamp | Update time |
+
+### Position Fields
+| Field Name | FIX Tag | JSON Field | Values | Description |
+|------------|---------|------------|--------|-------------|
+| PosQty | 704 | posQty | Unsigned quantity | Position quantity |
+| LongQty | 705 | longQty | Positive value | Long position |
+| ShortQty | 705 | shortQty | Positive value | Short position |
+| - | - | posQtySigned | Signed quantity | +Long, -Short |
+
+### Additional Fields
+| Field Name | FIX Tag | JSON Field | Values | Description |
+|------------|---------|------------|--------|-------------|
+| CashOrderQty | 152 | cashOrderQty | USD micro-units | Notional value |
+| StopPx | 99 | stopPx | Micro-units | Stop trigger price |
+| ExpireTime | 126 | expireTime | Timestamp | GTD expiration |
+| TransactTime | 60 | transactTime | Timestamp | Transaction time |
+| Text | 58 | text | String | Reject reason |
+| PossDupFlag | 43 | possDupFlag | Y/N | Possible duplicate |
+| OrigClOrdID | 41 | origClientOrderId | String | Original order ID |
 
 ## Copyright
 
